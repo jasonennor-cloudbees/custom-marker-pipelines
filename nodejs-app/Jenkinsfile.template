@@ -1,59 +1,27 @@
-library 'cd-accel'
-def testPodYaml = libraryResource 'podtemplates/nodejs-app/web-test-pod.yml'
 pipeline {
   agent none
   options { 
     buildDiscarder(logRotator(numToKeepStr: '2'))
     skipDefaultCheckout true
-    preserveStashes(buildCount: 2)
-  }
-  post {
-    aborted {
-      echo "Why didn't you push my button?"
-    }
   }
   stages {
-  stage('Test') {
-agent {
-        kubernetes {
-          label 'nodejs-testcafe'
-          yaml testPodYaml
-        }
-      }
+    stage('Test') {
+      agent { label 'nodejs-app' }
       steps {
-       steps {
         checkout scm
         container('nodejs') {
-          sh '''
-            npm install express
-            npm install pug --save
-            node ./hello.js &
-          '''
-        }
-        container('testcafe') {
-          sh '/opt/testcafe/docker/testcafe-docker.sh "chromium --no-sandbox" tests/*.js -r xunit:res.xml'
-        }
-      }
-
-      }
-       post {
-        success {
-          stash name: 'app', includes: '*.js, public/**, views/*, Dockerfile'
-        }
-        always {
-          junit 'res.xml'
+          echo 'Hello World!'   
+          sh 'node --version'
         }
       }
     }
     stage('Build and Push Image') {
-      agent any
       when {
          beforeAgent true
          branch 'master'
       }
       steps {
          echo "TODO - build and push image"
-         unstash 'app'
       }
       post {
         success {
@@ -67,15 +35,15 @@ agent {
         branch 'master'
       }
       options {
-        timeout(time: 30, unit: 'SECONDS') 
+        timeout(time: 60, unit: 'SECONDS') 
       }
       input {
-        message "Should we continue?"
+        message "Should we deploy?"
         submitterParameter "APPROVER"
       }
       steps {
         echo "Continuing with deployment - approved by ${APPROVER}"
       }
-    }  
+    }   
   }
 }
