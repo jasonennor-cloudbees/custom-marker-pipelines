@@ -5,7 +5,6 @@ pipeline {
     skipDefaultCheckout true
     preserveStashes(buildCount: 2)
   }
-  }
   post {
     aborted {
       echo "Why didn't you push my button?"
