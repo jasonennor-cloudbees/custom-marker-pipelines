@@ -37,7 +37,6 @@ pipeline {
       }
       input {
         message "Should we continue?"
-        submitter "ChrisCouger"
         submitterParameter "APPROVER"
       }
       steps {
